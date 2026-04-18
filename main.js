@@ -34,15 +34,17 @@ async function main() {
         routes: {
             "/": async req => {
                 let template = await Bun.file("index.html").text();
-                let functionNumber = Temporal.Now.plainDateISO().since(Temporal.PlainDate.from("2026-04-14"), { largestUnit: "days" });
+                let params = new URL(req.url).searchParams;
+                let days = params.has("day") ? Number(params.get("day")) : Temporal.Now.plainDateISO().since(Temporal.PlainDate.from("2026-04-18"), { largestUnit: "days" }).total("days");
 
-                let days = functionNumber.total("days");
                 jsc.setRandomSeed(Number(Bun.hash(days.toString())));
                 let index = ~~(Math.random() * functions.length);
-                let todayFunction = functions[index];
+                let today = functions[index];
 
                 return new Response(
-                    template.replace("/* filled by server */", `today=${JSON.stringify(todayFunction)}; classes=${JSON.stringify(classes)}; index=${index}; days=${days}; `),
+                    template
+                        .replace("/* filled by server */", `today=${JSON.stringify(today)}; classes=${JSON.stringify(classes)}; index=${index}; days=${days}; `)
+                        .replace("/* short */", `${today.namespace}::${today.className}::${today.name}`),
                     {
                         headers: { "Content-Type": "text/html" }
                     }
