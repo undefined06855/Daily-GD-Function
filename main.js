@@ -49,13 +49,14 @@ async function main() {
                 );
             },
 
-            "/style.css": Bun.file("style.css")
+            "/style.css": Bun.file("style.css"),
+            "/favicon.svg": Bun.file("favicon.svg")
         },
 
-        port: 2002
+        port: process.env.PORT ?? 2002
     });
 
-    console.log("Hosting Daily GD Function on port 2002");
+    console.log(`Hosting Daily GD Function on port ${process.env.PORT ?? 2002}`);
 }
 
 main();
