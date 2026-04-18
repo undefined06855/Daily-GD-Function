@@ -53,10 +53,10 @@ async function main() {
             "/favicon.svg": Bun.file("favicon.svg")
         },
 
-        port: process.env.PORT ?? 2002
+        port: process.env.PORT ?? 443
     });
 
-    console.log(`Hosting Daily GD Function on port ${process.env.PORT ?? 2002}`);
+    console.log(`Hosting Daily GD Function on port ${process.env.PORT ?? 443}`);
 }
 
 main();
