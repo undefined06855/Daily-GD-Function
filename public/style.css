@@ -119,6 +119,22 @@ footer {
     color: #ffffff;
 }
 
+@media (max-width: 750px) {
+    main, footer {
+        font-size: 15px;
+    }
+
+    main > #function {
+        > #function-return {
+            margin-bottom: -5px;
+        }
+
+        > #function-name {
+            font-size: 30px;
+        }
+    }
+}
+
 .type-generic { color: #9e6ad4; }
 .type-class { color: #f5dd9f; }
 .function-name { color: #6a80d8; }
