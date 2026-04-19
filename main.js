@@ -8,7 +8,6 @@ async function main() {
     let functions = [];
     let classes = [];
 
-
     for (let classData of data) {
         let split = classData.name.split("::");
         let namespace, className;
@@ -30,10 +29,12 @@ async function main() {
         classes.push(className);
     }
 
+    let port = process.env.PORT ?? 443;
+
     Bun.serve({
         routes: {
             "/": async () => {
-                return new Response(await Bun.file("index.html").text(), { headers: { "Content-Type": "text/html" } });
+                return new Response(await Bun.file("public/index.html").text(), { headers: { "Content-Type": "text/html" } });
             },
 
             "/today": async req => {
@@ -47,14 +48,19 @@ async function main() {
                 return new Response(JSON.stringify({ today, classes, index, days }), { headers: { "Content-Type": "application/json" } });
             },
 
-            "/style.css": Bun.file("style.css"),
-            "/favicon.svg": Bun.file("favicon.svg")
+            "/style.css": Bun.file("public/style.css"),
+            "/favicon.svg": Bun.file("public/favicon.svg"),
+
+            "/dt.js": Bun.file("public/dt.js"),
+
+            // allow top level await
+            "/main.js": async () => new Response(`!(async () => { ${await Bun.file("public/main.js").text()} })();`, { headers: { "Content-Type": "application/json" } }),
         },
 
-        port: process.env.PORT ?? 443
+        port: port
     });
 
-    console.log(`Hosting Daily GD Function on port ${process.env.PORT ?? 443}`);
+    console.log(`Hosting Daily GD Function on port ${port}`);
 }
 
 main();

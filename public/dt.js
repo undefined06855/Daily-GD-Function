@@ -1,0 +1,2 @@
+// thanks dt
+function $(...e){let t=String.template(...e),n=t.replace(/[#.][^#.]+/gm,"").trimEnd().trimStart(),r=t.match(/[#][^#.]+/gm),c=t.match(/[.][^#.]+/gm),a=document.createElement(n);return r&&(a.id=r.join(" ").replaceAll("#","")),c&&(a.className=c.join(" ").replaceAll(".","")),a.$=function(e){for(const[t,n]of Object.entries(e))a[t]=n;return a},function(...e){return a.append(...e),a}}String.template=function(e,...t){return e.reduce((e,n,r)=>e+n+(t[r]??""),"")};
