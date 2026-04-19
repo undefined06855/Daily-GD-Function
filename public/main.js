@@ -15,14 +15,9 @@ const addressesWrapper = document.querySelector("#addresses");
 const footer = document.querySelector("footer");
 const supportsTemporal = typeof Temporal !== "undefined";
 
-/** @param {string} typeString */
-function classForType(typeString) {
-    return classes.includes(typeString) ? "type-class" : "type-generic";
-}
-
 /**
  * @param {string} typeString
- * @param {string} typeString
+ * @param {string} paramName
  */
 function createType(typeString, paramName = "") {
     let [ namespace, name ] = typeString.split("::");
@@ -31,7 +26,7 @@ function createType(typeString, paramName = "") {
         namespace = "";
     }
 
-    const match = typeString.match(/^(.*?)([*&]+)?$/);
+    const match = name.match(/^(.*?)([*&]+)?$/);
     const type = match[1];
     const suffixes = match[2] ? match[2].split('') : [];
 
@@ -40,7 +35,10 @@ function createType(typeString, paramName = "") {
     wrapper.appendChild($`span.namespace-name`(namespace));
     if (namespace != "") wrapper.appendChild($`span.white`("::"));
 
-    wrapper.appendChild($`span.${classForType(type)}`(type));
+    let className;
+    if (namespace != "") className = "type-class";
+    else className = classes.includes(type) ? "type-class" : "type-generic";
+    wrapper.appendChild($`span.${className}`(type));
 
     for (let suffix of suffixes) {
         wrapper.appendChild($`span.white`(suffix));
