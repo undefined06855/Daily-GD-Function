@@ -1,7 +1,6 @@
 # Daily GD Function
 
-This simply displays a unique GD function every day, with its address, what platforms it's on and how many times it's
-shown up before!
+This simply displays a unique GD function every day!
 
 To install dependencies:
 
