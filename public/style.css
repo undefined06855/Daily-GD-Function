@@ -104,11 +104,12 @@ main {
             color: #ffffff;
 
             > .address-platform {
-                font-size: 15px;
+                font-size: 13px;
             }
 
             > .address-offset {
                 font-family: "Courier New", Courier, monospace;
+                font-size: 20px;
             }
         }
     }
