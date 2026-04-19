@@ -57,11 +57,16 @@ functionNameWrapper.appendChild($`span.type-class`(functionData.className));
 functionNameWrapper.appendChild($`span.white`("::"));
 functionNameWrapper.appendChild($`span.function-name`(functionData.name));
 
-for (let arg of functionData.args) {
-    let wrapper = createType(arg.type, arg.name);
-    wrapper.classList.add("param");
-    functionParamsWrapper.appendChild(wrapper);
+if (functionData.args.length == 0) {
+    functionParamsWrapper.remove();
+} else {
+    for (let arg of functionData.args) {
+        let wrapper = createType(arg.type, arg.name);
+        wrapper.classList.add("param");
+        functionParamsWrapper.appendChild(wrapper);
+    }
 }
+
 
 function generateAnchorSource(content) {
     let url = new URL(window.location.href);
