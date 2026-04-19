@@ -42,7 +42,7 @@ main {
         > #function-return {
             display: flex;
             flex-direction: row;
-            gap: 10px;
+            gap: 4px;
 
             margin-bottom: -20px;
         }
