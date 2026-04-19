@@ -1,18 +1,11 @@
-const searchParamsDay = new URL(window.location.href).searchParams.get("day");
-const res = await fetch(`/today${searchParamsDay ? `?day=${searchParamsDay}` : ""}`);
-const data = await res.json();
-
-const today = data.today;
-const classes = data.classes;
-const index = data.index;
-const days = data.days;
+// requires functionData, classes, functionIndex, functionDate, functionDay to be defined
 
 const functionNameWrapper = document.querySelector("#function-name");
 const functionParamsWrapper = document.querySelector("#function-params");
 const functionReturnWrapper = document.querySelector("#function-return");
 const functionNumberWrapper = document.querySelector("#function-number");
 const addressesWrapper = document.querySelector("#addresses");
-const footer = document.querySelector("footer");
+const footer = document.querySelector("#footer-content");
 const supportsTemporal = typeof Temporal !== "undefined";
 
 /**
@@ -50,21 +43,21 @@ function createType(typeString, paramName = "") {
     return wrapper;
 }
 
-if (today.const) functionReturnWrapper.appendChild(createType("const"));
-if (today.static) functionReturnWrapper.appendChild(createType("static"));
-if (today.virtual) functionReturnWrapper.appendChild(createType("virtual"));
-functionReturnWrapper.appendChild(createType(today.return));
+if (functionData.const) functionReturnWrapper.appendChild(createType("const"));
+if (functionData.static) functionReturnWrapper.appendChild(createType("static"));
+if (functionData.virtual) functionReturnWrapper.appendChild(createType("virtual"));
+functionReturnWrapper.appendChild(createType(functionData.return));
 
-if (today.namespace != "") {
-    functionNameWrapper.appendChild($`span.namespace-name`(today.namespace));
+if (functionData.namespace != "") {
+    functionNameWrapper.appendChild($`span.namespace-name`(functionData.namespace));
     functionNameWrapper.appendChild($`span.white`("::"));
 }
 
-functionNameWrapper.appendChild($`span.type-class`(today.className));
+functionNameWrapper.appendChild($`span.type-class`(functionData.className));
 functionNameWrapper.appendChild($`span.white`("::"));
-functionNameWrapper.appendChild($`span.function-name`(today.name));
+functionNameWrapper.appendChild($`span.function-name`(functionData.name));
 
-for (let arg of today.args) {
+for (let arg of functionData.args) {
     let wrapper = createType(arg.type, arg.name);
     wrapper.classList.add("param");
     functionParamsWrapper.appendChild(wrapper);
@@ -72,20 +65,20 @@ for (let arg of today.args) {
 
 function generateAnchorSource(content) {
     let url = new URL(window.location.href);
-    url.searchParams.set("day", days);
+    url.searchParams.set("day", functionDay);
     return `<a href="${url.href}">${content}</a>`;
 }
 
 if (supportsTemporal) {
-    let now = Temporal.Now.instant().toZonedDateTimeISO("UTC").toPlainDate();
+    let now = Temporal.Instant.from(functionDate).toZonedDateTimeISO("UTC").toPlainDate();
     let toOrdinal = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
     const dateString = `${toOrdinal(now.day)} ${new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(now)}`;
-    functionNumberWrapper.innerHTML = generateAnchorSource(`Function #${index} on ${dateString} (#${days})`);
+    functionNumberWrapper.innerHTML = generateAnchorSource(`Function #${functionIndex} on ${dateString} (#${functionDay})`);
 } else {
-    functionNumberWrapper.innerHTML = generateAnchorSource(`Function #${index} (#${days})`);
+    functionNumberWrapper.innerHTML = generateAnchorSource(`Function #${functionIndex} (#${functionDay})`);
 }
 
-for (let [ platform, address ] of Object.entries(today.bindings)) {
+for (let [ platform, address ] of Object.entries(functionData.bindings)) {
     if (!address) continue;
 
     if (address == "link") address = "(linked)";

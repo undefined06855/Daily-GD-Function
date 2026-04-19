@@ -38,42 +38,52 @@ async function main() {
         return true;
     }
 
-    function getDayInfo(req) {
-        let params = new URL(req.url).searchParams;
-        let days = ~~(searchParamIsValid(params.get("day")) ? Number(params.get("day")) : Temporal.Now.instant().since(Temporal.Instant.from("2026-04-17T00:00Z")).total("days"));
-
-        jsc.setRandomSeed(Number(Bun.hash(days.toString())));
-        let index = ~~(Math.random() * functions.length);
-        let today = functions[index];
-
-        return { today, index, days };
-    }
-
     Bun.serve({
         routes: {
             "/": async req => {
-                let template = await Bun.file("public/index.html").text();
-                let info = getDayInfo(req).today;
+                let [template, dt, source] = await Promise.all([
+                    Bun.file("public/index.html").text(),
+                    Bun.file("public/dt.js").text(),
+                    Bun.file("public/main.js").text()
+                ]);
 
-                template = template.replaceAll("{{preview}}", info.namespace == "" ? `${info.className}::${info.name}` : `${info.namespace}::${info.className}::${info.name}`);
+                let params = new URL(req.url).searchParams;
+                let usingSearchParam = searchParamIsValid(params.get("day"));
+                let firstDay = Temporal.Instant.from("2026-04-17T00:00Z");
+                let functionDay = ~~(usingSearchParam ? Number(params.get("day")) : Temporal.Now.instant().since(firstDay).total("days"));
+                let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
 
-                return new Response(template, { headers: { "Content-Type": "text/html" } });
-            },
+                jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
+                let functionIndex = ~~(Math.random() * functions.length);
+                let functionData = functions[functionIndex];
 
-            "/today": async req => {
-                let info = getDayInfo(req);
-                return new Response(JSON.stringify({
-                    today: info.today, classes, index: info.index, days: info.days
-                }), { headers: { "Content-Type": "application/json" } });
+                template = template.replace("{{dt}}", () => dt);
+                template = template.replace("{{source}}", () => source);
+
+                if (usingSearchParam) {
+                    template = template.replaceAll("{{description}}", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
+                } else {
+                    template = template.replaceAll("{{description}}", "What is today's daily Geometry Dash function?");
+                }
+
+                template = template.replace("{{data}}", () => JSON.stringify({
+                    functionData, classes, functionIndex, functionDate, functionDay
+                }))
+
+                return new Response(
+                    template,
+                    {
+                        headers: {
+                            "Content-Type": "text/html",
+                            "Cache-Control": "no-cache, no-store, max-age=-1"
+                        }
+                    }
+                );
             },
 
             "/style.css": Bun.file("public/style.css"),
             "/favicon.svg": Bun.file("public/favicon.svg"),
-
-            "/dt.js": Bun.file("public/dt.js"),
-
-            // allow top level await
-            "/main.js": async () => new Response(`!(async () => { ${await Bun.file("public/main.js").text()} })();`, { headers: { "Content-Type": "text/javascript" } }),
+            "/gh-icon.png": Bun.file("public/gh-icon.png"),
         },
 
         port: port
