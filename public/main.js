@@ -89,6 +89,7 @@ for (let [ platform, address ] of Object.entries(today.bindings)) {
     if (!address) continue;
 
     if (address == "link") address = "(linked)";
+    else if (address == "inline") address = "(inlined)";
     else address = `0x${address.toString(16)}`;
 
     addressesWrapper.appendChild(
