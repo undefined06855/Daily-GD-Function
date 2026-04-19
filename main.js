@@ -38,21 +38,33 @@ async function main() {
         return true;
     }
 
+    function getDayInfo(req) {
+        let params = new URL(req.url).searchParams;
+        let days = ~~(searchParamIsValid(params.get("day")) ? Number(params.get("day")) : Temporal.Now.instant().since(Temporal.Instant.from("2026-04-17T00:00Z")).total("days"));
+
+        jsc.setRandomSeed(Number(Bun.hash(days.toString())));
+        let index = ~~(Math.random() * functions.length);
+        let today = functions[index];
+
+        return { today, index, days };
+    }
+
     Bun.serve({
         routes: {
-            "/": async () => {
-                return new Response(await Bun.file("public/index.html").text(), { headers: { "Content-Type": "text/html" } });
+            "/": async req => {
+                let template = await Bun.file("public/index.html").text();
+                let info = getDayInfo(req).today;
+
+                template = template.replace("{{preview}}", info.namespace == "" ? `${info.className}::${info.name}` : `${info.namespace}::${info.className}::${info.name}`);
+
+                return new Response(template, { headers: { "Content-Type": "text/html" } });
             },
 
             "/today": async req => {
-                let params = new URL(req.url).searchParams;
-                let days = ~~(searchParamIsValid(params.get("day")) ? Number(params.get("day")) : Temporal.Now.instant().since(Temporal.Instant.from("2026-04-17T00:00Z")).total("days"));
-
-                jsc.setRandomSeed(Number(Bun.hash(days.toString())));
-                let index = ~~(Math.random() * functions.length);
-                let today = functions[index];
-
-                return new Response(JSON.stringify({ today, classes, index, days }), { headers: { "Content-Type": "application/json" } });
+                let info = getDayInfo(req);
+                return new Response(JSON.stringify({
+                    today: info.today, classes, index: info.index, days: info.days
+                }), { headers: { "Content-Type": "application/json" } });
             },
 
             "/style.css": Bun.file("public/style.css"),
