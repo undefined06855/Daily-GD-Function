@@ -32,23 +32,19 @@ async function main() {
 
     Bun.serve({
         routes: {
-            "/": async req => {
-                let template = await Bun.file("index.html").text();
+            "/": async () => {
+                return new Response(await Bun.file("index.html").text(), { headers: { "Content-Type": "text/html" } });
+            },
+
+            "/today": async req => {
                 let params = new URL(req.url).searchParams;
-                let days = params.has("day") ? Number(params.get("day")) : Temporal.Now.plainDateISO().since(Temporal.PlainDate.from("2026-04-18"), { largestUnit: "days" }).total("days");
+                let days = ~~(params.has("day") ? Number(params.get("day")) : Temporal.Now.instant().since(Temporal.Instant.from("2026-04-17T00:00Z")).total("days"));
 
                 jsc.setRandomSeed(Number(Bun.hash(days.toString())));
                 let index = ~~(Math.random() * functions.length);
                 let today = functions[index];
 
-                return new Response(
-                    template
-                        .replace("/* filled by server */", `today=${JSON.stringify(today)}; classes=${JSON.stringify(classes)}; index=${index}; days=${days}; `)
-                        .replace("/* short */", `${today.namespace}::${today.className}::${today.name}`),
-                    {
-                        headers: { "Content-Type": "text/html" }
-                    }
-                );
+                return new Response(`let today=${JSON.stringify(today)}; classes=${JSON.stringify(classes)}; index=${index}; days=${days}; `)
             },
 
             "/style.css": Bun.file("style.css"),
