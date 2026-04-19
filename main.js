@@ -31,6 +31,13 @@ async function main() {
 
     let port = process.env.PORT ?? 443;
 
+    function searchParamIsValid(param) {
+        if (!param) return false;
+        if (isNaN(Number(param))) return false;
+        if (Number(param) <= 0) return false;
+        return true;
+    }
+
     Bun.serve({
         routes: {
             "/": async () => {
@@ -39,7 +46,7 @@ async function main() {
 
             "/today": async req => {
                 let params = new URL(req.url).searchParams;
-                let days = ~~(params.has("day") ? Number(params.get("day")) : Temporal.Now.instant().since(Temporal.Instant.from("2026-04-17T00:00Z")).total("days"));
+                let days = ~~(searchParamIsValid(params.get("day")) ? Number(params.get("day")) : Temporal.Now.instant().since(Temporal.Instant.from("2026-04-17T00:00Z")).total("days"));
 
                 jsc.setRandomSeed(Number(Bun.hash(days.toString())));
                 let index = ~~(Math.random() * functions.length);
