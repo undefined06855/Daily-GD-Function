@@ -73,7 +73,7 @@ async function main() {
             "/dt.js": Bun.file("public/dt.js"),
 
             // allow top level await
-            "/main.js": async () => new Response(`!(async () => { ${await Bun.file("public/main.js").text()} })();`, { headers: { "Content-Type": "application/json" } }),
+            "/main.js": async () => new Response(`!(async () => { ${await Bun.file("public/main.js").text()} })();`, { headers: { "Content-Type": "text/javascript" } }),
         },
 
         port: port
