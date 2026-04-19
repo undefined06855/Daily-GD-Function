@@ -55,7 +55,7 @@ async function main() {
                 let template = await Bun.file("public/index.html").text();
                 let info = getDayInfo(req).today;
 
-                template = template.replace("{{preview}}", info.namespace == "" ? `${info.className}::${info.name}` : `${info.namespace}::${info.className}::${info.name}`);
+                template = template.replaceAll("{{preview}}", info.namespace == "" ? `${info.className}::${info.name}` : `${info.namespace}::${info.className}::${info.name}`);
 
                 return new Response(template, { headers: { "Content-Type": "text/html" } });
             },
