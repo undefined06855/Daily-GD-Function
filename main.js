@@ -44,7 +44,7 @@ async function main() {
                 let index = ~~(Math.random() * functions.length);
                 let today = functions[index];
 
-                return new Response(`let today=${JSON.stringify(today)}; classes=${JSON.stringify(classes)}; index=${index}; days=${days}; `)
+                return new Response(JSON.stringify({ today, classes, index, days }), { headers: { "Content-Type": "application/json" } });
             },
 
             "/style.css": Bun.file("style.css"),
