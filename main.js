@@ -1,7 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as jsc from "bun:jsc"
 
-const firstDay = Temporal.Instant.from(process.env.FIRST_DAY);
+const firstDay = Temporal.Instant.from(process.env.FIRST_DAY ?? "2000-01-01T00:00Z");
 
 async function main() {
     console.log("Fetching codegen data...");
