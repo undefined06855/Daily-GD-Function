@@ -1,6 +1,8 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as jsc from "bun:jsc"
 
+const firstDay = Temporal.Instant.from(process.env.FIRST_DAY);
+
 async function main() {
     console.log("Fetching codegen data...");
     let res = await fetch("https://prevter.github.io/bindings-meta/CodegenData-2.2081.json");
@@ -31,26 +33,39 @@ async function main() {
 
     let port = process.env.PORT ?? 443;
 
+    /**
+     * @param {string | number} param
+     * @returns {boolean}
+     */
     function searchParamIsValid(param) {
-        if (!param) return false;
-        if (isNaN(Number(param))) return false;
-        if (Number(param) <= 0) return false;
+        param = Number(param);
+        if (isNaN(param)) return false;
+        if (~~param != param) return false;
+        if (~~param <= 0) return false;
         return true;
+    }
+
+    /**
+     * @returns {number}
+     */
+    function getCurrentDay() {
+        return ~~(Temporal.Now.instant().since(firstDay).total("days"));
     }
 
     Bun.serve({
         routes: {
-            "/": async req => {
-                let [template, dt, source] = await Promise.all([
+            "/:day": async req => {
+                if (!searchParamIsValid(req.params.day)) {
+                    return Response.redirect(`/${getCurrentDay()}`);
+                }
+
+                let [ template, dt, source ] = await Promise.all([
                     Bun.file("public/index.html").text(),
                     Bun.file("public/dt.js").text(),
                     Bun.file("public/main.js").text()
                 ]);
 
-                let params = new URL(req.url).searchParams;
-                let usingSearchParam = searchParamIsValid(params.get("day"));
-                let firstDay = Temporal.Instant.from("2026-04-17T00:00Z");
-                let functionDay = ~~(usingSearchParam ? Number(params.get("day")) : Temporal.Now.instant().since(firstDay).total("days"));
+                let functionDay = Number(req.params.day);
                 let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
 
                 jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
@@ -60,11 +75,7 @@ async function main() {
                 template = template.replace("{{dt}}", () => dt);
                 template = template.replace("{{source}}", () => source);
 
-                if (usingSearchParam) {
-                    template = template.replaceAll("{{description}}", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
-                } else {
-                    template = template.replaceAll("{{description}}", "What is today's daily Geometry Dash function?");
-                }
+                template = template.replaceAll("{{description}}", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
 
                 template = template.replace("{{data}}", () => JSON.stringify({
                     functionData, classes, functionIndex, functionDate, functionDay
@@ -81,12 +92,16 @@ async function main() {
                 );
             },
 
+
+            "/": Response.redirect(`/${getCurrentDay()}`),
+
             "/style.css": Bun.file("public/style.css"),
             "/favicon.svg": Bun.file("public/favicon.svg"),
             "/gh-icon.png": Bun.file("public/gh-icon.png"),
         },
 
-        port: port
+        port: port,
+        development: process.env.DEVELOPMENT == "true"
     });
 
     console.log(`Hosting Daily GD Function on port ${port}`);

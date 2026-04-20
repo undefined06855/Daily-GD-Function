@@ -70,7 +70,7 @@ if (functionData.args.length == 0) {
 
 function generateAnchorSource(content) {
     let url = new URL(window.location.href);
-    url.searchParams.set("day", functionDay);
+    url.pathname = functionDay.toString();
     return `<a href="${url.href}">${content}</a>`;
 }
 
