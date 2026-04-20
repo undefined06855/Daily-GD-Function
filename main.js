@@ -86,7 +86,6 @@ async function main() {
                     {
                         headers: {
                             "Content-Type": "text/html",
-                            "Cache-Control": "no-cache, no-store, max-age=-1"
                         }
                     }
                 );
