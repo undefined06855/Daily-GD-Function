@@ -84,10 +84,9 @@ if (supportsTemporal) {
 }
 
 for (let [ platform, address ] of Object.entries(functionData.bindings)) {
-    if (!address) continue;
-
     if (address == "link") address = "(linked)";
     else if (address == "inline") address = "(inlined)";
+    else if (address == null) address = "(rebinded)"
     else address = `0x${address.toString(16)}`;
 
     addressesWrapper.appendChild(
