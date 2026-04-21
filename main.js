@@ -52,47 +52,51 @@ async function main() {
         return ~~(Temporal.Now.instant().since(firstDay).total("days"));
     }
 
+    /**
+     * @param {string | null} day
+     * @returns {Response}
+     */
+    async function serve(day) {
+        if (!searchParamIsValid(req.params.day)) {
+            return Response.redirect(`/${getCurrentDay()}`);
+        }
+
+        let [ template, dt, source ] = await Promise.all([
+            Bun.file("public/index.html").text(),
+            Bun.file("public/dt.js").text(),
+            Bun.file("public/main.js").text()
+        ]);
+
+        let functionDay = Number(req.params.day);
+        let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
+
+        jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
+        let functionIndex = ~~(Math.random() * functions.length);
+        let functionData = functions[functionIndex];
+
+        template = template.replace("{{dt}}", () => dt);
+        template = template.replace("{{source}}", () => source);
+
+        template = template.replaceAll("{{description}}", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
+
+        template = template.replace("{{data}}", () => JSON.stringify({
+            functionData, classes, functionIndex, functionDate, functionDay
+        }))
+
+        return new Response(
+            template,
+            {
+                headers: {
+                    "Content-Type": "text/html",
+                }
+            }
+        );
+    }
+
     Bun.serve({
         routes: {
-            "/:day": async req => {
-                if (!searchParamIsValid(req.params.day)) {
-                    return Response.redirect(`/${getCurrentDay()}`);
-                }
-
-                let [ template, dt, source ] = await Promise.all([
-                    Bun.file("public/index.html").text(),
-                    Bun.file("public/dt.js").text(),
-                    Bun.file("public/main.js").text()
-                ]);
-
-                let functionDay = Number(req.params.day);
-                let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
-
-                jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
-                let functionIndex = ~~(Math.random() * functions.length);
-                let functionData = functions[functionIndex];
-
-                template = template.replace("{{dt}}", () => dt);
-                template = template.replace("{{source}}", () => source);
-
-                template = template.replaceAll("{{description}}", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
-
-                template = template.replace("{{data}}", () => JSON.stringify({
-                    functionData, classes, functionIndex, functionDate, functionDay
-                }))
-
-                return new Response(
-                    template,
-                    {
-                        headers: {
-                            "Content-Type": "text/html",
-                        }
-                    }
-                );
-            },
-
-
-            "/": Response.redirect(`/${getCurrentDay()}`),
+            "/:day": async req => serve(req.params.day),
+            "/": async () => serve(getCurrentDay().toString()),
 
             "/style.css": Bun.file("public/style.css"),
             "/favicon.svg": Bun.file("public/favicon.svg"),
