@@ -57,7 +57,7 @@ async function main() {
      * @returns {Response}
      */
     async function serve(day) {
-        if (!searchParamIsValid(req.params.day)) {
+        if (!searchParamIsValid(day)) {
             return Response.redirect(`/${getCurrentDay()}`);
         }
 
@@ -67,7 +67,7 @@ async function main() {
             Bun.file("public/main.js").text()
         ]);
 
-        let functionDay = Number(req.params.day);
+        let functionDay = Number(day);
         let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
 
         jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
