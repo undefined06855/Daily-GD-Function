@@ -13,10 +13,16 @@ const supportsTemporal = typeof Temporal !== "undefined";
  * @param {string} paramName
  */
 function createType(typeString, paramName = "") {
-    let [ namespace, name ] = typeString.split("::");
+    let [ namespace, name, third ] = typeString.split("::");
+    let secondary;
+    if (third) {
+        secondary = name;
+        name = third;
+    }
+
     if (!name) {
         name = namespace;
-        namespace = "";
+        namespace = undefined;
     }
 
     const match = name.match(/^(.*?)([*&]+)?$/);
@@ -25,11 +31,18 @@ function createType(typeString, paramName = "") {
 
     let wrapper = $`span`();
 
-    wrapper.appendChild($`span.namespace-name`(namespace));
-    if (namespace != "") wrapper.appendChild($`span.white`("::"));
+    if (namespace) {
+        wrapper.appendChild($`span.namespace-name`(namespace));
+        wrapper.appendChild($`span.white`("::"));
+    }
+
+    if (secondary) {
+        wrapper.appendChild($`span.type-class`(secondary));
+        wrapper.appendChild($`span.white`("::"));
+    }
 
     let className;
-    if (namespace != "") className = "type-class";
+    if (namespace) className = "type-class";
     else className = classes.includes(type) ? "type-class" : "type-generic";
     wrapper.appendChild($`span.${className}`(type));
 

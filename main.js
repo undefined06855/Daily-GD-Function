@@ -104,7 +104,7 @@ async function main() {
         },
 
         port: port,
-        development: process.env.DEVELOPMENT == "true"
+        development: process.env.DEVELOPMENT == "true",
     });
 
     console.log(`Hosting Daily GD Function on port ${port}`);
