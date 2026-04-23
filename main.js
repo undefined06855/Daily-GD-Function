@@ -61,13 +61,18 @@ async function main() {
             return Response.redirect(`/${getCurrentDay()}`);
         }
 
+        let functionDay = Number(day);
+
+        if (functionDay > getCurrentDay()) {
+            return Response.redirect(`/${getCurrentDay()}`);
+        }
+
         let [ template, dt, source ] = await Promise.all([
             Bun.file("public/index.html").text(),
             Bun.file("public/dt.js").text(),
             Bun.file("public/main.js").text()
         ]);
 
-        let functionDay = Number(day);
         let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
 
         jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
