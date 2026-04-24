@@ -1,6 +1,7 @@
 // requires functionData, classes, functionIndex, functionDate, functionDay to be defined
 
 const functionNameWrapper = document.querySelector("#function-name");
+const copyButton = document.querySelector("#copy-button");
 const functionParamsWrapper = document.querySelector("#function-params");
 const functionReturnWrapper = document.querySelector("#function-return");
 const functionNumberWrapper = document.querySelector("#function-number");
@@ -56,6 +57,10 @@ function createType(typeString, paramName = "") {
     return wrapper;
 }
 
+let fullClassName;
+if (functionData.namespace != "") fullClassName = `${functionData.namespace}::${functionData.className}`;
+else                              fullClassName = functionData.className;
+
 if (functionData.const) functionReturnWrapper.appendChild(createType("const"));
 if (functionData.static) functionReturnWrapper.appendChild(createType("static"));
 if (functionData.virtual) functionReturnWrapper.appendChild(createType("virtual"));
@@ -69,6 +74,17 @@ if (functionData.namespace != "") {
 functionNameWrapper.appendChild($`span.type-class`(functionData.className));
 functionNameWrapper.appendChild($`span.white`("::"));
 functionNameWrapper.appendChild($`span.function-name`(functionData.name));
+functionNameWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replace("::", "/")}#${functionData.name}`;
+
+let timeout;
+copyButton.addEventListener("click", () => {
+    navigator.clipboard.writeText(`${fullClassName}::${functionData.name}`);
+    copyButton.style.backgroundImage = "url(static/check.png)";
+    clearTimeout(timeout);
+    timeout = setTimeout(() => {
+        copyButton.style.backgroundImage = "";
+    }, 1500);
+});
 
 if (functionData.args.length == 0) {
     functionParamsWrapper.remove();
@@ -79,7 +95,6 @@ if (functionData.args.length == 0) {
         functionParamsWrapper.appendChild(wrapper);
     }
 }
-
 
 function generateAnchorSource(content) {
     let url = new URL(window.location.href);

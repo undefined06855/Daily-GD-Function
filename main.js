@@ -91,9 +91,7 @@ async function main() {
         return new Response(
             template,
             {
-                headers: {
-                    "Content-Type": "text/html",
-                }
+                headers: { "Content-Type": "text/html" }
             }
         );
     }
@@ -103,9 +101,10 @@ async function main() {
             "/:day": async req => serve(req.params.day),
             "/": async () => serve(getCurrentDay().toString()),
 
-            "/style.css": Bun.file("public/style.css"),
-            "/favicon.svg": Bun.file("public/favicon.svg"),
-            "/gh-icon.png": Bun.file("public/gh-icon.png"),
+            "/static/:content": async req => {
+                const file = Bun.file(`public/static/${req.params.content}`);
+                return new Response(file);
+            }
         },
 
         port: port,
