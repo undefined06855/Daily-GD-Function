@@ -192,18 +192,3 @@ footer {
 .ios { background-color: hsla(118, 79%, 53%, 0.467); border-color: hsla(118, 79%, 53%, 0.467); }
 .android32 { background-color: hsla(318, 79%, 53%, 0.467); border-color: hsla(318, 79%, 53%, 0.467); }
 .android64 { background-color: hsla(295, 79%, 53%, 0.467); border-color: hsla(295, 79%, 53%, 0.467); }
-
-
-@keyframes bump-on-copy {
-    from {
-        translate: 0px 0px;
-    }
-
-    50% {
-        translate: 0px -10px;
-    }
-
-    to {
-        translate: 0px 0px;
-    }
-}
