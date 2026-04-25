@@ -1,8 +1,9 @@
+* { box-sizing: border-box; }
+
 html, body, main {
     height: 100%;
     margin: 0px;
     padding: 0px;
-    box-sizing: border-box;
 }
 
 main, footer {
@@ -13,6 +14,7 @@ main, footer {
 
 a {
     color: inherit;
+    text-decoration: underline 0.5px;
 }
 
 main {
@@ -165,8 +167,15 @@ footer {
             margin-bottom: -5px;
         }
 
-        #name-wrapper > #function-name {
-            font-size: 30px;
+        #name-wrapper {
+            > #function-name {
+                font-size: 30px;
+            }
+
+            > #copy-button {
+                width: 20px;
+                min-width: 20px;
+            }
         }
     }
 }
