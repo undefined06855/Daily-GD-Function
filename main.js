@@ -101,10 +101,7 @@ async function main() {
             "/:day": async req => serve(req.params.day),
             "/": async () => serve(getCurrentDay().toString()),
 
-            "/static/:content": async req => {
-                const file = Bun.file(`public/static/${req.params.content}`);
-                return new Response(file);
-            }
+            "/static/:content": async req => new Response(Bun.file(`public/static/${req.params.content}`))
         },
 
         port: port,
