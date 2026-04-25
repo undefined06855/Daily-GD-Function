@@ -69,7 +69,8 @@ main {
             > #copy-button {
                 background-image: url("copy.png");
                 width: 32px;
-                height: 32px;
+                min-width: 32px;
+                aspect-ratio: 1 / 1;
                 background-size: cover;
                 cursor: pointer;
             }
