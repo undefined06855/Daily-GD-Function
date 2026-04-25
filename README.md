@@ -11,7 +11,7 @@ bun install
 To run:
 
 ```bash
-bun run index.ts
+bun run main
 ```
 
 The following environment variables should be defined (Bun will automatically load them from a `.env` file, if present.)
