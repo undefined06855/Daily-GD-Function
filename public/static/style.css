@@ -28,6 +28,8 @@ main {
 
     background-color: #272737;
 
+    overflow: hidden;
+
     > * {
         padding: 35px;
         max-width: 99%;
@@ -57,10 +59,10 @@ main {
             display: flex;
             flex-direction: row;
             align-items: center;
-            gap: 20px;
+            flex-wrap: wrap;
 
-            > #function-name {
-                display: flex;
+            > .large-font {
+                display: inline-flex;
                 flex-direction: row;
                 flex-wrap: wrap;
 
@@ -70,10 +72,14 @@ main {
 
             > #copy-button {
                 background-image: url("copy.png");
+                background-size: cover;
+
                 width: 32px;
                 min-width: 32px;
-                aspect-ratio: 1 / 1;
-                background-size: cover;
+                    aspect-ratio: 1 / 1;
+
+                margin-left: 20px;
+
                 cursor: pointer;
             }
         }
@@ -151,8 +157,12 @@ footer {
         text-align: center;
     }
 
-    > a > img {
+    > #github-link {
         width: 30px;
+        aspect-ratio: 1 / 1;
+
+        background-image: url("gh-icon.png");
+        background-size: cover;
         filter: invert(1);
     }
 }
@@ -162,13 +172,13 @@ footer {
         font-size: 15px;
     }
 
-    main > #function{
+    main > #function {
         > #function-return {
             margin-bottom: -5px;
         }
 
         #name-wrapper {
-            > #function-name {
+            > .large-font {
                 font-size: 30px;
             }
 

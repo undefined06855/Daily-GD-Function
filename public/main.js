@@ -1,5 +1,7 @@
 // requires functionData, classes, functionIndex, functionDate, functionDay to be defined
 
+const functionClassWrapper = document.querySelector("#class-name");
+const functionClassNameSeparator = document.querySelector("#class-function-double-colon");
 const functionNameWrapper = document.querySelector("#function-name");
 const copyButton = document.querySelector("#copy-button");
 const functionParamsWrapper = document.querySelector("#function-params");
@@ -67,13 +69,14 @@ if (functionData.virtual) functionReturnWrapper.appendChild(createType("virtual"
 functionReturnWrapper.appendChild(createType(functionData.return));
 
 if (functionData.namespace != "") {
-    functionNameWrapper.appendChild($`span.namespace-name`(functionData.namespace));
-    functionNameWrapper.appendChild($`span.white`("::"));
+    functionClassWrapper.appendChild($`span.namespace-name`(functionData.namespace));
+    functionClassWrapper.appendChild($`span.white`("::"));
 }
 
-functionNameWrapper.appendChild($`span.type-class`(functionData.className));
-functionNameWrapper.appendChild($`span.white`("::"));
+functionClassWrapper.appendChild($`span.type-class`(functionData.className));
+functionClassNameSeparator.appendChild($`span.white`("::"));
 functionNameWrapper.appendChild($`span.function-name`(functionData.name));
+functionClassWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replace("::", "/")}`;
 functionNameWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replace("::", "/")}#${functionData.name}`;
 
 let timeout;
