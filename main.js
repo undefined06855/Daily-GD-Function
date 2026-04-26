@@ -42,6 +42,7 @@ async function main() {
         if (isNaN(param)) return false;
         if (~~param != param) return false;
         if (~~param <= 0) return false;
+        if (~~param > getCurrentDay()) return false;
         return true;
     }
 
@@ -62,10 +63,6 @@ async function main() {
         }
 
         let functionDay = Number(day);
-
-        if (functionDay > getCurrentDay()) {
-            return Response.redirect(`/${getCurrentDay()}`);
-        }
 
         let [ template, dt, source ] = await Promise.all([
             Bun.file("public/index.html").text(),
@@ -96,12 +93,45 @@ async function main() {
         );
     }
 
+    /**
+     * @param {string | null} day
+     * @returns {Response}
+     */
+    async function serveAPI(day) {
+        if (!searchParamIsValid(day)) {
+            return new Response(JSON.stringify({ error: "day is not valid" }));
+        }
+
+        let currentDay = Number(day);
+
+        let functionDate = firstDay.add({ hours: 24 * currentDay }).toString();
+        jsc.setRandomSeed(Number(Bun.hash(currentDay.toString())));
+        let functionIndex = ~~(Math.random() * functions.length);
+
+        return new Response(JSON.stringify({
+            current_day: currentDay,
+            current_date: functionDate,
+            current_index: functionIndex,
+            current_function: functions[functionIndex],
+
+            total_count: functions.length,
+
+            jsc_seed: Bun.hash(currentDay.toString()).toString(),
+        }), {
+            headers: { "Content-Type": "application/json" }
+        });
+    }
+
     Bun.serve({
         routes: {
-            "/:day": async req => serve(req.params.day),
             "/": async () => serve(getCurrentDay().toString()),
+            "/:day": async req => serve(req.params.day),
 
-            "/static/:content": async req => new Response(Bun.file(`public/static/${req.params.content}`))
+            "/api": async () => serveAPI(getCurrentDay().toString()),
+            "/api/:day": async req => serveAPI(req.params.day),
+
+            "/static/:content": async req => new Response(Bun.file(`public/static/${req.params.content}`)),
+            "/favicon.ico": Response.redirect("static/favicon.svg")
         },
 
         port: port,
