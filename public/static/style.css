@@ -207,7 +207,7 @@ footer {
             }
         }
 
-        > *:last-of-type {
+        > div:last-of-type {
             margin-bottom: 120px;
         }
     }
