@@ -14,7 +14,8 @@ const supportsTemporal = typeof Temporal !== "undefined";
 
 /**
  * @param {string} typeString
- * @param {string} paramName
+ * @param {string} [paramName=""]
+ * @returns {HTMLSpanElement}
  */
 function createType(typeString, paramName = "") {
     let [ namespace, name, third ] = typeString.split("::");
@@ -36,28 +37,51 @@ function createType(typeString, paramName = "") {
     let wrapper = $`span`();
 
     if (namespace) {
-        wrapper.appendChild($`span.namespace-name`(namespace));
+        wrapper.appendChild($`span.namespace-name`(...breakOnCamelCase(namespace)));
         wrapper.appendChild($`span.white`("::"));
     }
 
     if (secondary) {
-        wrapper.appendChild($`span.type-class`(secondary));
+        wrapper.appendChild($`span.type-class`(...breakOnCamelCase(secondary)));
         wrapper.appendChild($`span.white`("::"));
     }
 
     let className;
     if (namespace) className = "type-class";
     else className = classes.includes(type) ? "type-class" : "type-generic";
-    wrapper.appendChild($`span.${className}`(type));
+    wrapper.appendChild($`span.${className}`(...breakOnCamelCase(type)));
 
     for (let suffix of suffixes) {
         wrapper.appendChild($`span.white`(suffix));
     }
 
     wrapper.appendChild($`span`("\u00A0"));
-    wrapper.appendChild($`span.white`(paramName));
+    wrapper.appendChild($`span.white`(...breakOnCamelCase(paramName)));
 
     return wrapper;
+}
+
+/**
+ * @param {string} typeString
+ * @returns {Array<(Text|HTMLWBRElement)>}
+ */
+function breakOnCamelCase(typeString) {
+    let ret = [];
+
+    let currentSlice = "";
+    for (let char of typeString.split("")) {
+        if (char.toUpperCase() == char) {
+            ret.push(document.createTextNode(currentSlice));
+            ret.push($`wbr`());
+            currentSlice = "";
+        }
+
+        currentSlice += char;
+    }
+
+    ret.push(document.createTextNode(currentSlice));
+
+    return ret;
 }
 
 let fullClassName;
@@ -70,13 +94,13 @@ if (functionData.virtual) functionReturnWrapper.appendChild(createType("virtual"
 functionReturnWrapper.appendChild(createType(functionData.return));
 
 if (functionData.namespace != "") {
-    functionClassWrapper.appendChild($`span.namespace-name`(functionData.namespace));
+    functionClassWrapper.appendChild($`span.namespace-name`(...breakOnCamelCase(functionData.namespace)));
     functionClassWrapper.appendChild($`span.white`("::"));
 }
 
-functionClassWrapper.appendChild($`span.type-class`(functionData.className));
+functionClassWrapper.appendChild($`span.type-class`(...breakOnCamelCase(functionData.className)));
 functionClassNameSeparator.appendChild($`span.white`("::"));
-functionNameWrapper.appendChild($`span.function-name`(functionData.name));
+functionNameWrapper.appendChild($`span.function-name`(...breakOnCamelCase(functionData.name)));
 functionClassWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replace("::", "/")}`;
 functionNameWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replace("::", "/")}#${functionData.name}`;
 

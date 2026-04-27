@@ -28,7 +28,8 @@ main {
 
     background-color: #272737;
 
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
 
     > * {
         padding: 35px;
@@ -187,21 +188,35 @@ footer {
         font-size: 15px;
     }
 
-    main > #function {
-        > #function-return {
-            margin-bottom: -5px;
-        }
+    main {
+        justify-content: flex-start;
 
-        #name-wrapper {
-            > .large-font {
-                font-size: 30px;
+        > #function {
+            > #function-return {
+                margin-bottom: -5px;
             }
 
-            > #copy-button {
-                width: 20px;
-                min-width: 20px;
+            #name-wrapper {
+                > .large-font {
+                    font-size: 30px;
+                }
+
+                > #copy-button {
+                    display: none;
+                }
             }
         }
+
+        > *:last-of-type {
+            margin-bottom: 120px;
+        }
+    }
+
+    footer {
+        background-color: #272737c9;
+        backdrop-filter: blur(60px);
+        border-radius: 20px;
+        padding: 15px;
     }
 }
 
