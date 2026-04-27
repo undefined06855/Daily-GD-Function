@@ -31,6 +31,11 @@ async function main() {
         classes.push(className);
     }
 
+    for (let functionData of functions) {
+        let overloadCount = functions.filter(data => data.name == functionData.name && data.className == functionData.className && data.namespace == functionData.namespace).length - 1;
+        functionData.overloads = overloadCount;
+    }
+
     let port = process.env.PORT ?? 443;
 
     /**
@@ -108,11 +113,13 @@ async function main() {
         jsc.setRandomSeed(Number(Bun.hash(currentDay.toString())));
         let functionIndex = ~~(Math.random() * functions.length);
 
+        let functionData = functions[functionIndex]
+
         return new Response(JSON.stringify({
             current_day: currentDay,
             current_date: functionDate,
             current_index: functionIndex,
-            current_function: functions[functionIndex],
+            current_function: functionData,
 
             total_count: functions.length,
 

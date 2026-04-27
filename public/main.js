@@ -1,5 +1,6 @@
 // requires functionData, classes, functionIndex, functionDate, functionDay to be defined
 
+const main = document.querySelector("main");
 const functionClassWrapper = document.querySelector("#class-name");
 const functionClassNameSeparator = document.querySelector("#class-function-double-colon");
 const functionNameWrapper = document.querySelector("#function-name");
@@ -89,12 +90,19 @@ copyButton.addEventListener("click", () => {
     }, 1500);
 });
 
-if (functionData.args.length == 0) {
+if (functionData.args.length == 0 && functionData.overloads == 0) {
     functionParamsWrapper.remove();
 } else {
     for (let arg of functionData.args) {
         let wrapper = createType(arg.type, arg.name);
         wrapper.classList.add("param");
+        functionParamsWrapper.appendChild(wrapper);
+    }
+
+    if (functionData.overloads > 0) {
+        let wrapper = createType(`+${functionData.overloads}`, `overload${functionData.overloads == 1 ? "" : "s"}`);
+        wrapper.classList.add("param");
+        wrapper.id = "overloads";
         functionParamsWrapper.appendChild(wrapper);
     }
 }
@@ -156,3 +164,5 @@ function updateFooter() {
 
 setInterval(updateFooter, 1000);
 updateFooter();
+
+main.classList.remove("no-javascript");

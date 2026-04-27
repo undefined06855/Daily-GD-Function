@@ -39,6 +39,10 @@ main {
         box-shadow: 0px 0px 50px -15px #0000006b;
     }
 
+    &.no-javascript > *:not(noscript) {
+        display: none !important;
+    }
+
     > #function {
         position: relative;
         display: flex;
@@ -76,7 +80,7 @@ main {
 
                 width: 32px;
                 min-width: 32px;
-                    aspect-ratio: 1 / 1;
+                aspect-ratio: 1 / 1;
 
                 margin-left: 20px;
 
@@ -90,11 +94,18 @@ main {
             flex-wrap: wrap;
             gap: 10px;
 
-            > .param {
+            > .param, > #overloads {
                 border: 2px solid #31314b;
                 background-color: #464674;
                 border-radius: 4px;
                 padding: 4px 8px;
+            }
+
+            > #overloads {
+                font-size: 16px;
+
+                align-self: center;
+                margin-left: auto;
             }
         }
 
@@ -138,6 +149,10 @@ main {
                 font-size: 20px;
             }
         }
+    }
+
+    > noscript {
+        color: white;
     }
 }
 
