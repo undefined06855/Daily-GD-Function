@@ -118,16 +118,22 @@ if (functionData.args.length == 0 && functionData.overloads == 0) {
     functionParamsWrapper.remove();
 } else {
     for (let arg of functionData.args) {
-        let wrapper = createType(arg.type, arg.name);
-        wrapper.classList.add("param");
-        functionParamsWrapper.appendChild(wrapper);
+        functionParamsWrapper.appendChild(
+            createType(arg.type, arg.name)
+                .$({
+                    classList: [ "param" ]
+                })
+        );
     }
 
     if (functionData.overloads > 0) {
-        let wrapper = createType(`+${functionData.overloads}`, `overload${functionData.overloads == 1 ? "" : "s"}`);
-        wrapper.classList.add("param");
-        wrapper.id = "overloads";
-        functionParamsWrapper.appendChild(wrapper);
+        functionParamsWrapper.appendChild(
+            createType(`+${functionData.overloads}`, `overload${functionData.overloads == 1 ? "" : "s"}`)
+                .$({
+                    classList: [ "param" ],
+                    id: "overloads"
+                })
+        );
     }
 }
 
