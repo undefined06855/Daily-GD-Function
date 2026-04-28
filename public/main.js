@@ -84,9 +84,10 @@ function breakOnCamelCase(typeString) {
     return ret;
 }
 
-let fullClassName;
-if (functionData.namespace != "") fullClassName = `${functionData.namespace}::${functionData.className}`;
-else                              fullClassName = functionData.className;
+let fullClassName = functionData.className;
+if (functionData.namespace != "") {
+    fullClassName = `${functionData.namespace}::${fullClassName}`;
+}
 
 if (functionData.const) functionReturnWrapper.appendChild(createType("const"));
 if (functionData.static) functionReturnWrapper.appendChild(createType("static"));
