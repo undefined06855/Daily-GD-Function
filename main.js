@@ -1,5 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
-import * as jsc from "bun:jsc"
+import * as jsc from "bun:jsc";
+
+import template from "./public/index.html" with { type: "text" };
 
 const firstDay = Temporal.Instant.from(process.env.FIRST_DAY ?? "2000-01-01T00:00Z");
 
@@ -69,8 +71,7 @@ async function main() {
 
         let functionDay = Number(day);
 
-        let [ template, dt, source ] = await Promise.all([
-            Bun.file("public/index.html").text(),
+        let [ dt, source ] = await Promise.all([
             Bun.file("public/dt.js").text(),
             Bun.file("public/main.js").text()
         ]);
@@ -81,17 +82,32 @@ async function main() {
         let functionIndex = ~~(Math.random() * functions.length);
         let functionData = functions[functionIndex];
 
-        template = template.replace("{{dt}}", () => dt);
-        template = template.replace("{{source}}", () => source);
+        let rewriter = new HTMLRewriter()
+            .on(".rewrite-description", {
+                element(e) {
+                    e.setAttribute("content", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
+                }
+            })
+            .on("script", {
+                element(e) {
+                    e.setInnerContent(`
+                        ${dt}
 
-        template = template.replaceAll("{{description}}", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
+                        for (let [ key, value ] of Object.entries(
+                            ${JSON.stringify({
+                                functionData, classes, functionIndex, functionDate, functionDay
+                            })}
+                        )) {
+                            window[key] = value;
+                        }
 
-        template = template.replace("{{data}}", () => JSON.stringify({
-            functionData, classes, functionIndex, functionDate, functionDay
-        }))
+                        ${source}
+                    `, { html: true });
+                }
+            });
 
         return new Response(
-            template,
+            rewriter.transform(template),
             {
                 headers: { "Content-Type": "text/html" }
             }
