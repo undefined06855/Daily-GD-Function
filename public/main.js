@@ -91,6 +91,7 @@ else                              fullClassName = functionData.className;
 if (functionData.const) functionReturnWrapper.appendChild(createType("const"));
 if (functionData.static) functionReturnWrapper.appendChild(createType("static"));
 if (functionData.virtual) functionReturnWrapper.appendChild(createType("virtual"));
+if (functionData.kind != "normal") functionReturnWrapper.appendChild(createType(`(${functionData.kind})`));
 functionReturnWrapper.appendChild(createType(functionData.return));
 
 if (functionData.namespace != "") {
