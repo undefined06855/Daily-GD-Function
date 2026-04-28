@@ -2,6 +2,8 @@ import { Temporal } from "@js-temporal/polyfill";
 import * as jsc from "bun:jsc";
 
 import template from "./public/index.html" with { type: "text" };
+import utils from "./public/dt.js" with { type: "text" };
+import source from "./public/main.js" with { type: "text" };
 
 const firstDay = Temporal.Instant.from(process.env.FIRST_DAY ?? "2000-01-01T00:00Z");
 
@@ -71,11 +73,6 @@ async function main() {
 
         let functionDay = Number(day);
 
-        let [ dt, source ] = await Promise.all([
-            Bun.file("public/dt.js").text(),
-            Bun.file("public/main.js").text()
-        ]);
-
         let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
 
         jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
@@ -91,7 +88,7 @@ async function main() {
             .on("script", {
                 element(e) {
                     e.setInnerContent(`
-                        ${dt}
+                        ${utils}
 
                         for (let [ key, value ] of Object.entries(
                             ${JSON.stringify({
