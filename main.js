@@ -1,9 +1,11 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as jsc from "bun:jsc";
 
-import template from "./public/index.html" with { type: "text" };
+import dayTemplate from "./public/day.html" with { type: "text" };
+import daySource from "./public/day.js" with { type: "text" };
+import historyTemplate from "./public/history.html" with { type: "text" };
+import historySource from "./public/history.js" with { type: "text" };
 import utils from "./public/dt.js" with { type: "text" };
-import source from "./public/main.js" with { type: "text" };
 
 const firstDay = Temporal.Instant.from(process.env.FIRST_DAY ?? "2000-01-01T00:00Z");
 
@@ -43,6 +45,41 @@ async function main() {
     let port = process.env.PORT ?? 443;
 
     /**
+     * @returns {number}
+     */
+    function getCurrentDay() {
+        return ~~(Temporal.Now.instant().since(firstDay).total("days"));
+    }
+
+    /**
+     * @param {number} day
+     * @returns {number}
+     */
+    function functionIndexForDay(day) {
+        jsc.setRandomSeed(Number(Bun.hash(day.toString())));
+        let index = ~~(Math.random() * functions.length);
+        return index;
+    }
+
+    /**
+     * @param {number} day
+     * @returns {Object}
+     */
+    function generateHistoryData(day) {
+        let data = functions[functionIndexForDay(day)];
+        return {
+            ...data,
+            day,
+            date: firstDay.add({ hours: 24 * day })
+        };
+    }
+
+    let cachedHistory = [];
+    for (let i = 1; i <= getCurrentDay(); i++) {
+        cachedHistory.push(generateHistoryData(i));
+    }
+
+    /**
      * @param {string | number} param
      * @returns {boolean}
      */
@@ -56,36 +93,31 @@ async function main() {
     }
 
     /**
-     * @returns {number}
-     */
-    function getCurrentDay() {
-        return ~~(Temporal.Now.instant().since(firstDay).total("days"));
-    }
-
-    /**
-     * @param {string | null} day
+     * @param {string} day
+     * @param {bool} explicitDay
      * @returns {Response}
      */
-    async function serve(day) {
+    async function serve(day, explicitDay) {
         if (!searchParamIsValid(day)) {
             return Response.redirect(`/${getCurrentDay()}`);
         }
 
         let functionDay = Number(day);
-
-        let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
-
-        jsc.setRandomSeed(Number(Bun.hash(functionDay.toString())));
-        let functionIndex = ~~(Math.random() * functions.length);
+        let functionIndex = functionIndexForDay(functionDay);
         let functionData = functions[functionIndex];
+        let functionDate = firstDay.add({ hours: 24 * day }).toString();
 
         let rewriter = new HTMLRewriter()
             .on(".rewrite-description", {
                 element(e) {
-                    e.setAttribute("content", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
+                    if (!explicitDay) {
+                        e.setAttribute("content", "What is today's Daily GD Function? Well I don't know, I'm just an embed, just click the link and find out!");
+                    } else {
+                        e.setAttribute("content", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
+                    }
                 }
             })
-            .on("script", {
+            .on(".rewrite-script", {
                 element(e) {
                     e.setInnerContent(`
                         ${utils}
@@ -98,13 +130,22 @@ async function main() {
                             window[key] = value;
                         }
 
-                        ${source}
+                        ${daySource}
                     `, { html: true });
+                }
+            })
+            .on(".rewrite-title", {
+                element(e) {
+                    if (!explicitDay) {
+                        e.setInnerContent("Daily GD Function");
+                    } else {
+                        e.setInnerContent(`Daily GD Function | ${functionDay}`);
+                    }
                 }
             });
 
         return new Response(
-            rewriter.transform(template),
+            rewriter.transform(dayTemplate),
             {
                 headers: { "Content-Type": "text/html" }
             }
@@ -112,43 +153,76 @@ async function main() {
     }
 
     /**
-     * @param {string | null} day
+     * @param {string} day
+     * @param {bool} explicitDay
      * @returns {Response}
      */
-    async function serveAPI(day) {
+    async function serveAPI(day, explicitDay) {
         if (!searchParamIsValid(day)) {
             return new Response(JSON.stringify({ error: "day is not valid" }));
         }
 
-        let currentDay = Number(day);
-
-        let functionDate = firstDay.add({ hours: 24 * currentDay }).toString();
-        jsc.setRandomSeed(Number(Bun.hash(currentDay.toString())));
-        let functionIndex = ~~(Math.random() * functions.length);
+        let functionDay = Number(day);
+        let functionDate = firstDay.add({ hours: 24 * functionDay }).toString();
+        let functionIndex = functionIndexForDay(functionDate);
 
         let functionData = functions[functionIndex]
 
         return new Response(JSON.stringify({
-            current_day: currentDay,
+            current_day: functionDay,
             current_date: functionDate,
             current_index: functionIndex,
             current_function: functionData,
 
             total_count: functions.length,
+            explicit_day: explicitDay,
 
-            jsc_seed: Bun.hash(currentDay.toString()).toString(),
+            jsc_seed: Bun.hash(day.toString()).toString(),
         }), {
             headers: { "Content-Type": "application/json" }
         });
     }
 
+    /**
+     * @returns {Response}
+     */
+    async function serveHistory() {
+        let history = cachedHistory;
+
+        while (history.length < getCurrentDay()) {
+            history.push(generateHistoryData(history.length + 1));
+        }
+
+        let rewriter = new HTMLRewriter()
+            .on(".rewrite-script", {
+                element(e) {
+                    e.setInnerContent(`
+                        ${utils}
+
+                        let history = ${JSON.stringify(history.slice(0, getCurrentDay()))};
+
+                        ${historySource}
+                    `, { html: true });
+                }
+            });
+
+        return new Response(
+            rewriter.transform(historyTemplate),
+            {
+                headers: { "Content-Type": "text/html" }
+            }
+        );
+    }
+
     Bun.serve({
         routes: {
-            "/": async () => serve(getCurrentDay().toString()),
-            "/:day": async req => serve(req.params.day),
+            "/": async () => serve(getCurrentDay().toString(), false),
+            "/:day": async req => serve(req.params.day, true),
 
-            "/api": async () => serveAPI(getCurrentDay().toString()),
-            "/api/:day": async req => serveAPI(req.params.day),
+            "/api": async () => serveAPI(getCurrentDay().toString(), false),
+            "/api/:day": async req => serveAPI(req.params.day, true),
+
+            "/history": async () => serveHistory(),
 
             "/static/:content": async req => new Response(Bun.file(`public/static/${req.params.content}`)),
             "/favicon.ico": Response.redirect("static/favicon.svg")
