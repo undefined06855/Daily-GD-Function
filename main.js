@@ -74,6 +74,7 @@ async function main() {
         };
     }
 
+    console.log(`caching ${getCurrentDay()} days of history...`);
     let cachedHistory = [];
     for (let i = 1; i <= getCurrentDay(); i++) {
         cachedHistory.push(generateHistoryData(i));
