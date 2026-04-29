@@ -194,6 +194,11 @@ async function main() {
         }
 
         let rewriter = new HTMLRewriter()
+            .on(".rewrite-description", {
+                element(e) {
+                    e.setAttribute("content", `History of all Daily Geometry Dash functions. Find them here. Click the link. Do it!!! Click it!!!!!! COME ON!!!!! SEEE THE HISTORY!!!!!!! NOWWWW!!!!!!`);
+                }
+            })
             .on(".rewrite-script", {
                 element(e) {
                     e.setInnerContent(`

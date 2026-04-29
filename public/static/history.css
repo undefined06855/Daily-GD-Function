@@ -30,20 +30,27 @@ main {
 
     overflow-x: hidden;
 
+    &.no-javascript > *:not(noscript) {
+        display: none !important;
+    }
+
+    > * {
+        padding: 35px;
+
+        border-radius: 18px;
+        background-color: #3c3c57;
+        box-shadow: 0px 0px 50px -15px #0000006b;
+    }
+
     > #wrapper {
         display: flex;
         flex-direction: column;
         justify-content: start;
         align-items: center;
 
-        padding: 35px;
         max-width: 1400px;
         width: 90%;
         height: 90%;
-
-        border-radius: 18px;
-        background-color: #3c3c57;
-        box-shadow: 0px 0px 50px -15px #0000006b;
 
         > h1 {
             text-align: center;
@@ -72,11 +79,11 @@ main {
             }
 
             > #bottom-shadow {
-                box-shadow: inset 0px -50px 50px 0px #3c3c57;
+                box-shadow: inset 0px -3dvh 50px 0px #3c3c57;
             }
 
             > #top-shadow {
-                box-shadow: inset 0px 50px 50px 0px #3c3c57;
+                box-shadow: inset 0px 3dvh 50px 0px #3c3c57;
             }
 
             > #scroll {
@@ -123,6 +130,10 @@ main {
                 }
             }
         }
+    }
+
+    > noscript {
+        color: white;
     }
 }
 

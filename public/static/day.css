@@ -111,6 +111,25 @@ main {
         }
 
         > #function-number {
+            margin-bottom: -10px;
+        }
+
+        > #function-history::before {
+            content: "";
+            display: inline-block;
+
+            background-image: url("menu.png");
+            background-size: cover;
+
+            width: 1.2em;
+            min-width: 1.2em;
+            aspect-ratio: 1 / 1;
+
+            vertical-align: middle;
+            translate: 0px -1.5px;
+        }
+
+        > #function-number, > #function-history {
             width: 100%;
 
             text-align: center;

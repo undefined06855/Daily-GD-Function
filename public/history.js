@@ -1,5 +1,6 @@
 // requires history to be defined
 
+const main = document.querySelector("main");
 const scroll = document.querySelector("#scroll");
 const shadowTop = document.querySelector("#top-shadow");
 const shadowBottom = document.querySelector("#bottom-shadow");
@@ -58,3 +59,5 @@ shadowTop.style.display = "none";
 if (scroll.scrollHeight - scroll.offsetHeight == 0) {
     shadowBottom.style.display = "none";
 }
+
+main.classList.remove("no-javascript");
