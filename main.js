@@ -23,8 +23,8 @@ async function main() {
             namespace = "";
             className = split[0];
         } else {
-            namespace = split[0];
-            className = split.slice(1).join("::");
+            namespace = split.slice(0, -1).join("::");
+            className = split[split.length - 1];
         }
 
         for (let functionData of classData.functions) {
