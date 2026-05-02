@@ -103,8 +103,8 @@ if (functionData.namespace != "") {
 functionClassWrapper.appendChild($`span.type-class`(...breakOnCamelCase(functionData.className)));
 functionClassNameSeparator.appendChild($`span.white`("::"));
 functionNameWrapper.appendChild($`span.function-name`(...breakOnCamelCase(functionData.name)));
-functionClassWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replace("::", "/")}`;
-functionNameWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replace("::", "/")}#${functionData.name}`;
+functionClassWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replaceAll("::", "/")}`;
+functionNameWrapper.href = `https://docs.geode-sdk.org/classes/${fullClassName.replaceAll("::", "/")}#${functionData.name}`;
 
 let timeout;
 copyButton.addEventListener("click", () => {

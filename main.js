@@ -19,12 +19,12 @@ async function main() {
     for (let classData of data) {
         let split = classData.name.split("::");
         let namespace, className;
-        if (split.length == 2) {
-            namespace = split[0];
-            className = split[1];
-        } else {
+        if (split.length == 1) {
             namespace = "";
             className = split[0];
+        } else {
+            namespace = split[0];
+            className = split.slice(1).join("::");
         }
 
         for (let functionData of classData.functions) {
@@ -197,7 +197,7 @@ async function main() {
         let rewriter = new HTMLRewriter()
             .on(".rewrite-description", {
                 element(e) {
-                    e.setAttribute("content", `History of all Daily Geometry Dash functions. Find them here. Click the link. Do it!!! Click it!!!!!! COME ON!!!!! SEEE THE HISTORY!!!!!!! NOWWWW!!!!!!`);
+                    e.setAttribute("content", "History of all Daily Geometry Dash functions. Find them here. Click the link. Do it!!! Click it!!!!!! COME ON!!!!! SEEE THE HISTORY!!!!!!! NOWWWW!!!!!!");
                 }
             })
             .on(".rewrite-script", {
