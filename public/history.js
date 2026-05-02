@@ -6,8 +6,8 @@ const shadowTop = document.querySelector("#top-shadow");
 const shadowBottom = document.querySelector("#bottom-shadow");
 const supportsTemporal = typeof Temporal !== "undefined";
 
-let day = 1;
-for (let data of history) {
+let day = history.length;
+for (let data of history.reverse()) {
     let nameWrapper = $`div.name-wrapper`();
     if (data.namespace != "") {
         nameWrapper.appendChild($`span.namespace-name`(data.namespace));
@@ -38,17 +38,17 @@ for (let data of history) {
         href: url.href
     }));
 
-    day += 1;
+    day -= 1;
 }
 
 scroll.addEventListener("scroll", () => {
-    if (scroll.scrollTop == 0) {
+    if (scroll.scrollTop <= 5) {
         shadowTop.style.display = "none";
     } else {
         shadowTop.style.display = "";
     }
 
-    if (scroll.scrollTop == (scroll.scrollHeight - scroll.offsetHeight)) {
+    if (scroll.scrollTop >= (scroll.scrollHeight - scroll.offsetHeight) - 5) {
         shadowBottom.style.display = "none";
     } else {
         shadowBottom.style.display = "";
