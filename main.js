@@ -1,4 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
+import * as canvas from "canvas";
 import * as jsc from "bun:jsc";
 
 import dayTemplate from "./public/day.html" with { type: "text" };
@@ -96,7 +97,7 @@ async function main() {
     /**
      * @param {string} day
      * @param {bool} explicitDay
-     * @returns {Response}
+     * @returns {Promise<Response>}
      */
     async function serve(day, explicitDay) {
         if (!searchParamIsValid(day)) {
@@ -115,6 +116,15 @@ async function main() {
                         e.setAttribute("content", "What is today's Daily GD Function? Well I don't know, I'm just an embed, just click the link and find out!");
                     } else {
                         e.setAttribute("content", `Daily GD Function #${functionDay}: ${functionData.namespace == "" ? "" : `${functionData.namespace}::`}${functionData.className}::${functionData.name}!`);
+                    }
+                }
+            })
+            .on(".rewrite-image", {
+                element(e) {
+                    if (!explicitDay) {
+                        e.setAttribute("content", "/embed");
+                    } else {
+                        e.setAttribute("content", `/embed/${day}`);
                     }
                 }
             })
@@ -140,7 +150,7 @@ async function main() {
                     if (!explicitDay) {
                         e.setInnerContent("Daily GD Function");
                     } else {
-                        e.setInnerContent(`Daily GD Function | ${functionDay}`);
+                         e.setInnerContent(`Daily GD Function | ${functionDay}`);
                     }
                 }
             });
@@ -156,7 +166,7 @@ async function main() {
     /**
      * @param {string} day
      * @param {bool} explicitDay
-     * @returns {Response}
+     * @returns {Promise<Response>}
      */
     async function serveAPI(day, explicitDay) {
         if (!searchParamIsValid(day)) {
@@ -184,8 +194,69 @@ async function main() {
         });
     }
 
+    let embedImages = [];
+    const embedImageCount = 8;
+    for (let i = 0; i < embedImageCount; i++) embedImages.push(null);
+
+    const textColors = [ "red", "orange", "yellow", "green", "blue", "indigo", "violet" ];
+
+    canvas.registerFont("embed/comic.ttf", { family: "Comic Sans MS" });
+
     /**
-     * @returns {Response}
+     * @param {string} day
+     * @param {bool} explicitDay
+     * @returns {Promise<Response>}
+     */
+    async function serveEmbed(day, explicitDay) {
+        if (!searchParamIsValid(day)) {
+            return new Response("day is not valid");
+        }
+
+        if (!explicitDay) {
+            return new Response(Bun.file("embed/generic.png"));
+        }
+
+        let file = Bun.file(`.embed-cache/${day}.png`);
+        if (await file.exists()) {
+            return new Response(file);
+        }
+
+        let _canvas = canvas.createCanvas(480, 320);
+        let ctx = _canvas.getContext("2d");
+
+        jsc.setRandomSeed(Number(Bun.hash(day.toString())));
+        let imageIndex = ~~(Math.random() * embedImages.length);
+        if (!embedImages[imageIndex]) {
+            embedImages[imageIndex] = await canvas.loadImage(`embed/background-${imageIndex}.png`);
+        }
+
+        ctx.drawImage(embedImages[imageIndex], 0, 0);
+
+        let data = functions[functionIndexForDay(Number(day))];
+        let name = data.namespace == "" ? `${data.className}::${data.name}` : `${data.namespace}::${data.className}::${data.name}`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.font = "100px Comic Sans MS";
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 20;
+        ctx.fillStyle = textColors[~~(Math.random() * textColors.length)];
+        ctx.strokeText(name, 240, 160, 480);
+        ctx.fillText(name, 240, 160, 480);
+
+        ctx.drawImage(await canvas.loadImage(`embed/confetti.png`), 0, 0);
+
+        let buffer = _canvas.toBuffer();
+        await file.write(buffer);
+        return new Response(
+            buffer.buffer,
+            {
+                headers: { "Content-Type": "image/png" }
+            }
+        );
+    }
+
+    /**
+     * @returns {Promise<Response>}
      */
     async function serveHistory() {
         let history = cachedHistory;
@@ -228,9 +299,12 @@ async function main() {
             "/api": async () => serveAPI(getCurrentDay().toString(), false),
             "/api/:day": async req => serveAPI(req.params.day, true),
 
+            "/embed": async () => serveEmbed(getCurrentDay().toString(), false),
+            "/embed/:day": async req => serveEmbed(req.params.day, true),
+
             "/history": async () => serveHistory(),
 
-            "/static/:content": async req => new Response(Bun.file(`public/static/${req.params.content}`)),
+            "/static/:content": req => new Response(Bun.file(`public/static/${req.params.content}`)),
             "/favicon.ico": Response.redirect("static/favicon.svg")
         },
 

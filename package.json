@@ -8,6 +8,7 @@
     "typescript": "^5"
   },
   "dependencies": {
-    "@js-temporal/polyfill": "^0.5.1"
+    "@js-temporal/polyfill": "^0.5.1",
+    "canvas": "^3.2.3"
   }
 }
