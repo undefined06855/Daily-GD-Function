@@ -199,6 +199,7 @@ async function main() {
     for (let i = 0; i < embedImageCount; i++) embedImages.push(null);
 
     const textColors = [ "red", "orange", "yellow", "green", "blue", "indigo", "violet" ];
+    const confetti = await canvas.loadImage(`embed/confetti.png`);
 
     canvas.registerFont("embed/comic.ttf", { family: "Comic Sans MS" });
 
@@ -225,7 +226,7 @@ async function main() {
         let ctx = _canvas.getContext("2d");
 
         jsc.setRandomSeed(Number(Bun.hash(day.toString())));
-        let imageIndex = ~~(Math.random() * embedImages.length);
+        let imageIndex = ~~(Math.random() * embedImageCount);
         if (!embedImages[imageIndex]) {
             embedImages[imageIndex] = await canvas.loadImage(`embed/background-${imageIndex}.png`);
         }
@@ -243,7 +244,7 @@ async function main() {
         ctx.strokeText(name, 240, 160, 480);
         ctx.fillText(name, 240, 160, 480);
 
-        ctx.drawImage(await canvas.loadImage(`embed/confetti.png`), 0, 0);
+        ctx.drawImage(confetti, 0, 0);
 
         let buffer = _canvas.toBuffer();
         await file.write(buffer);
