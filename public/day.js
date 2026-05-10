@@ -198,4 +198,3 @@ setInterval(updateFooter, 1000);
 updateFooter();
 
 main.classList.remove("no-javascript");
-if (window.location.search == "?redirect") window.location.search = "";
