@@ -209,7 +209,7 @@ async function main() {
      */
     async function serveEmbed(day, explicitDay) {
         if (!searchParamIsValid(day)) {
-            return new Response("day is not valid");
+            return new Response(Bun.file("embed/invalid-date.png"));
         }
 
         if (!explicitDay) {
