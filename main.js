@@ -98,13 +98,15 @@ async function main() {
     /**
      * @param {string} day
      * @param {bool} explicitDay
+     * @param {Request} req
      * @returns {Promise<Response>}
      */
-    async function serve(day, explicitDay) {
-        if (!searchParamIsValid(day)) {
-            // double redirect BUT fixes explicitDay
-            return Response.redirect("/");
+    async function serve(day, explicitDay, req) {
+        if (!searchParamIsValid(day) && day != "?redirect") {
+            return Response.redirect("/?redirect");
         }
+
+        if (day == "?redirect") day = getCurrentDay().toString();
 
         let functionDay = Number(day);
         let functionIndex = functionIndexForDay(functionDay);
@@ -112,6 +114,13 @@ async function main() {
         let functionDate = firstDay.add({ hours: 24 * day }).toZonedDateTime(timezone).toString();
 
         let rewriter = new HTMLRewriter()
+            .on(".rewrite-embed", {
+                element(e) {
+                    // if this is a redirect, remove embed stuff
+                    if (new URL(req.url).searchParams.get("redirect") == "") e.remove();
+                    else e.removeAndKeepContent();
+                }
+            })
             .on(".rewrite-description", {
                 element(e) {
                     if (!explicitDay) {
@@ -298,8 +307,8 @@ async function main() {
 
     Bun.serve({
         routes: {
-            "/": async () => serve(getCurrentDay().toString(), false),
-            "/:day": async req => serve(req.params.day, true),
+            "/": async req => serve(getCurrentDay().toString(), false, req),
+            "/:day": async req => serve(req.params.day, true, req),
 
             "/api": async () => serveAPI(getCurrentDay().toString(), false),
             "/api/:day": async req => serveAPI(req.params.day, true),
