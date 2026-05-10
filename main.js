@@ -251,6 +251,7 @@ async function main() {
         ctx.textBaseline = "middle";
         ctx.font = "100px Comic Sans MS";
         ctx.strokeStyle = "#000000";
+        ctx.lineJoin = "round";
         ctx.lineWidth = 20;
         ctx.fillStyle = textColors[~~(Math.random() * textColors.length)];
         ctx.strokeText(name, 240, 160, 480);
