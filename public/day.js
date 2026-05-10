@@ -1,4 +1,4 @@
-// requires functionData, classes, functionIndex, functionDate, functionDay to be defined
+// requires functionData, classes, functionIndex, functionDate, functionDay, timezone to be defined
 
 const main = document.querySelector("main");
 const functionClassWrapper = document.querySelector("#class-name");
@@ -146,7 +146,7 @@ function generateAnchorSource(content) {
 }
 
 if (supportsTemporal) {
-    let now = Temporal.Instant.from(functionDate).toZonedDateTimeISO("UTC").toPlainDate();
+    let now = Temporal.Instant.from(functionDate).toZonedDateTimeISO(timezone).toPlainDate();
     let toOrdinal = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
     const dateString = `${toOrdinal(now.day)} ${new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(now)}`;
     functionNumberWrapper.innerHTML = generateAnchorSource(`Function #${functionIndex} on ${dateString} (#${functionDay})`);
@@ -174,7 +174,7 @@ for (let [ platform, address ] of Object.entries(functionData.bindings)) {
 function updateFooter() {
     if (!supportsTemporal) return;
 
-    let now = Temporal.Now.instant().toZonedDateTimeISO("UTC");
+    let now = Temporal.Now.instant().toZonedDateTimeISO(timezone);
 
     let tomorrowAtMidnight = now
         .add({ days: 1 })

@@ -1,4 +1,4 @@
-// requires history to be defined
+// requires history, timezone to be defined
 
 const main = document.querySelector("main");
 const scroll = document.querySelector("#scroll");
@@ -25,7 +25,7 @@ for (let data of history.reverse()) {
     let date = $`div.white.date`();
 
     if (supportsTemporal) {
-        let now = Temporal.Instant.from(data.date).toZonedDateTimeISO("UTC").toPlainDate();
+        let now = Temporal.Instant.from(data.date).toZonedDateTimeISO(timezone).toPlainDate();
         let toOrdinal = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
         date.innerText = `${toOrdinal(now.day)} ${new Intl.DateTimeFormat("en-GB", { month: "long", year: "numeric" }).format(now)}`;
     }

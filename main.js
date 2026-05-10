@@ -1,5 +1,5 @@
 import { Temporal } from "@js-temporal/polyfill";
-import * as canvas from "canvas";
+import * as canvas from "@napi-rs/canvas";
 import * as jsc from "bun:jsc";
 
 import dayTemplate from "./public/day.html" with { type: "text" };
@@ -8,7 +8,8 @@ import historyTemplate from "./public/history.html" with { type: "text" };
 import historySource from "./public/history.js" with { type: "text" };
 import utils from "./public/dt.js" with { type: "text" };
 
-const firstDay = Temporal.Instant.from(process.env.FIRST_DAY ?? "2000-01-01T00:00Z");
+const timezone = process.env.TIMEZONE ?? "UTC";
+const firstDay = Temporal.Instant.from(process.env.FIRST_DAY ?? "2000-01-01T00:00Z").toZonedDateTimeISO(timezone).toPlainDate();
 
 async function main() {
     console.log("Fetching codegen data...");
@@ -49,7 +50,7 @@ async function main() {
      * @returns {number}
      */
     function getCurrentDay() {
-        return ~~(Temporal.Now.instant().since(firstDay).total("days"));
+        return ~~(Temporal.Now.zonedDateTimeISO(timezone).toPlainDate().since(firstDay).days);
     }
 
     /**
@@ -71,7 +72,7 @@ async function main() {
         return {
             ...data,
             day,
-            date: firstDay.add({ hours: 24 * day })
+            date: firstDay.add({ hours: 24 * day }).toZonedDateTime(timezone).toString()
         };
     }
 
@@ -107,7 +108,7 @@ async function main() {
         let functionDay = Number(day);
         let functionIndex = functionIndexForDay(functionDay);
         let functionData = functions[functionIndex];
-        let functionDate = firstDay.add({ hours: 24 * day }).toString();
+        let functionDate = firstDay.add({ hours: 24 * day }).toZonedDateTime(timezone).toString();
 
         let rewriter = new HTMLRewriter()
             .on(".rewrite-description", {
@@ -135,7 +136,7 @@ async function main() {
 
                         for (let [ key, value ] of Object.entries(
                             ${JSON.stringify({
-                                functionData, classes, functionIndex, functionDate, functionDay
+                                functionData, classes, functionIndex, functionDate, functionDay, timezone
                             })}
                         )) {
                             window[key] = value;
@@ -189,6 +190,7 @@ async function main() {
             explicit_day: explicitDay,
 
             jsc_seed: Bun.hash(day.toString()).toString(),
+            server_timezone: timezone
         }), {
             headers: { "Content-Type": "application/json" }
         });
@@ -201,7 +203,7 @@ async function main() {
     const textColors = [ "red", "orange", "yellow", "green", "blue", "indigo", "violet" ];
     const confetti = await canvas.loadImage(`embed/confetti.png`);
 
-    canvas.registerFont("embed/comic.ttf", { family: "Comic Sans MS" });
+    canvas.GlobalFonts.registerFromPath("embed/comic.ttf", "Comic Sans MS");
 
     /**
      * @param {string} day
@@ -278,6 +280,7 @@ async function main() {
                         ${utils}
 
                         let history = ${JSON.stringify(history.slice(0, getCurrentDay()))};
+                        let timezone = "${timezone}";
 
                         ${historySource}
                     `, { html: true });
