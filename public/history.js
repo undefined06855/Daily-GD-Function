@@ -38,7 +38,7 @@ for (let data of history.reverse()) {
         href: url.href
     }));
 
-    day -= 1;
+    day--;
 }
 
 scroll.addEventListener("scroll", () => {
