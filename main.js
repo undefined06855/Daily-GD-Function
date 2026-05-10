@@ -102,7 +102,8 @@ async function main() {
      */
     async function serve(day, explicitDay) {
         if (!searchParamIsValid(day)) {
-            return Response.redirect(`/${getCurrentDay()}`);
+            // double redirect BUT fixes explicitDay
+            return Response.redirect("/");
         }
 
         let functionDay = Number(day);
