@@ -248,7 +248,7 @@ async function main() {
 
         ctx.drawImage(confetti, 0, 0);
 
-        let buffer = _canvas.toBuffer();
+        let buffer = _canvas.toBuffer("image/png");
         await file.write(buffer);
         return new Response(
             buffer.buffer,
