@@ -306,7 +306,7 @@ async function main() {
         );
     }
 
-    Bun.serve({
+    let server = Bun.serve({
         routes: {
             "/": async req => serve(getCurrentDay().toString(), false, req),
             "/:day": async req => serve(req.params.day, true, req),
@@ -328,6 +328,12 @@ async function main() {
     });
 
     console.log(`Hosting Daily GD Function on port ${port}`);
+
+    if (process.env.REFRESH_EMBED_CRON) {
+        Bun.cron(process.env.REFRESH_EMBED_CRON, async () => {
+            await server.fetch("/embed");
+        }).unref(); // unref so if bun server shuts down, this wont keep the process alive
+    }
 }
 
 main();
