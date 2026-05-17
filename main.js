@@ -306,7 +306,7 @@ async function main() {
         );
     }
 
-    let server = Bun.serve({
+    Bun.serve({
         routes: {
             "/": async req => serve(getCurrentDay().toString(), false, req),
             "/:day": async req => serve(req.params.day, true, req),
@@ -331,7 +331,7 @@ async function main() {
 
     if (process.env.REFRESH_EMBED_CRON) {
         Bun.cron(process.env.REFRESH_EMBED_CRON, async () => {
-            await server.fetch("/embed");
+            await serveEmbed(getCurrentDay().toString(), false);
         }).unref(); // unref so if bun server shuts down, this wont keep the process alive
     }
 }
