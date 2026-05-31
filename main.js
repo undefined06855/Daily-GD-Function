@@ -353,7 +353,7 @@ async function main() {
 
         Bun.cron(process.env.TWT_SEND_MESSAGE_CRON, async () => {
             let currentDay = getCurrentDay();
-            let index = functionIndexForDay(functionDay);
+            let index = functionIndexForDay(currentDay);
             let data = functions[index];
             let name = data.namespace == "" ? `${data.className}::${data.name}` : `${data.namespace}::${data.className}::${data.name}`;
             let mediaID = await client.v1.uploadMedia(Buffer.from(await embedBufferForDay(currentDay)), { mimeType: "image/png" });
