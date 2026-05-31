@@ -1,6 +1,7 @@
 import { Temporal } from "@js-temporal/polyfill";
 import * as canvas from "@napi-rs/canvas";
 import * as jsc from "bun:jsc";
+import * as twitter from "twitter-api-v2"
 
 import dayTemplate from "./public/day.html" with { type: "text" };
 import daySource from "./public/day.js" with { type: "text" };
@@ -216,22 +217,13 @@ async function main() {
     canvas.GlobalFonts.registerFromPath("embed/comic.ttf", "Comic Sans MS");
 
     /**
-     * @param {string} day
-     * @param {bool} explicitDay
-     * @returns {Promise<Response>}
+     * @param {number} day
+     * @returns {Promise<ArrayBuffer>}
      */
-    async function serveEmbed(day, explicitDay) {
-        if (!searchParamIsValid(day)) {
-            return new Response(Bun.file("embed/invalid-date.png"));
-        }
-
-        if (!explicitDay) {
-            return new Response(Bun.file("embed/generic.png"));
-        }
-
+    async function embedBufferForDay(day) {
         let file = Bun.file(`.embed-cache/${day}.png`);
         if (await file.exists()) {
-            return new Response(file);
+            return await file.arrayBuffer();
         }
 
         let _canvas = canvas.createCanvas(480, 320);
@@ -259,10 +251,28 @@ async function main() {
 
         ctx.drawImage(confetti, 0, 0);
 
-        let buffer = _canvas.toBuffer("image/png");
+        let buffer = _canvas.toBuffer("image/png").buffer;
         await file.write(buffer);
+        return buffer;
+    }
+
+    /**
+     * @param {string} day
+     * @param {bool} explicitDay
+     * @returns {Promise<Response>}
+     */
+    async function serveEmbed(day, explicitDay) {
+        if (!searchParamIsValid(day)) {
+            return new Response(Bun.file("embed/invalid-date.png"));
+        }
+
+        if (!explicitDay) {
+            return new Response(Bun.file("embed/generic.png"));
+        }
+
+        let buffer = await embedBufferForDay(day);
         return new Response(
-            buffer.buffer,
+            buffer,
             {
                 headers: { "Content-Type": "image/png" }
             }
@@ -273,10 +283,8 @@ async function main() {
      * @returns {Promise<Response>}
      */
     async function serveHistory() {
-        let history = cachedHistory;
-
-        while (history.length < getCurrentDay()) {
-            history.push(generateHistoryData(history.length + 1));
+        while (cachedHistory.length < getCurrentDay()) {
+            cachedHistory.push(generateHistoryData(history.length + 1));
         }
 
         let rewriter = new HTMLRewriter()
@@ -290,7 +298,7 @@ async function main() {
                     e.setInnerContent(`
                         ${utils}
 
-                        let history = ${JSON.stringify(history.slice(0, getCurrentDay()))};
+                        let history = ${JSON.stringify(cachedHistory.slice(0, getCurrentDay()))};
                         let timezone = "${timezone}";
 
                         ${historySource}
@@ -333,6 +341,36 @@ async function main() {
         Bun.cron(process.env.REFRESH_EMBED_CRON, async () => {
             await serveEmbed(getCurrentDay().toString(), false);
         }).unref(); // unref so if bun server shuts down, this wont keep the process alive
+    }
+
+    if (process.env.TWT_SEND_MESSAGE_CRON) {
+        const client = new twitter.TwitterApi({
+            appKey: process.env.TWT_CONSUMER_KEY,
+            appSecret: process.env.TWT_CONSUMER_KEY_SECRET,
+            accessToken: process.env.TWT_OAUTH_TOKEN,
+            accessSecret: process.env.TWT_OAUTH_TOKEN_SECRET,
+        });
+
+        Bun.cron(process.env.TWT_SEND_MESSAGE_CRON, async () => {
+            let currentDay = getCurrentDay();
+            let data = functions[functionIndexForDay(currentDay)];
+            let name = data.namespace == "" ? `${data.className}::${data.name}` : `${data.namespace}::${data.className}::${data.name}`;
+            let mediaID = await client.v1.uploadMedia(Buffer.from(await embedBufferForDay(currentDay)), { mimeType: "image/png" });
+            let res = await client.v2.tweet(
+                `Today's function: ${name}! (#${currentDay})\n\n${process.env.TWT_MESSAGE_URL}/${currentDay}`,
+                {
+                    media: {
+                        media_ids: [ mediaID ]
+                    }
+                }
+            );
+
+            if (res.errors) {
+                for (let error of res.errors) {
+                    console.erorr(`Twitter API error ${error.title}: ${error.detail}`);
+                }
+            }
+        }).unref();
     }
 }
 

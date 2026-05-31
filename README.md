@@ -23,4 +23,16 @@ TIMEZONE=+01:00                 # The timezone to consider midnight in (default:
 DEVELOPMENT=true                # Whether Bun.serve is in development mode or not (default: false)
 ```
 
+To host the X dot com the everything app formerly Twitter dot com bot (for whatever reason), you can also set the
+following environment variables:
+```env
+TWT_SEND_MESSAGE_CRON=0 23 * * * # When to tweet today's daily function (default: disabled)
+TWT_CONSUMER_KEY=of three queens
+TWT_CONSUMER_KEY_SECRET=who blister
+TWT_OAUTH_TOKEN=and blaze
+TWT_OAUTH_TOKEN_SECRET=and burn
+TWT_MESSAGE_URL=https://daily-function.undefined0.dev # The URL to prepend to the current day to link to
+```
+This only supports OAuth 1.0 for now! (though there's not really any reason to support otherwise)
+
 This project was created using `bun init` in bun v1.3.12. [Bun](https://bun.com) is a fast all-in-one JavaScript runtime.
