@@ -31,7 +31,6 @@ TWT_CONSUMER_KEY=of three queens
 TWT_CONSUMER_KEY_SECRET=who blister
 TWT_OAUTH_TOKEN=and blaze
 TWT_OAUTH_TOKEN_SECRET=and burn
-TWT_MESSAGE_URL=https://daily-function.undefined0.dev # The URL to prepend to the current day to link to
 ```
 This only supports OAuth 1.0 for now! (though there's not really any reason to support otherwise)
 
