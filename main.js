@@ -78,9 +78,9 @@ async function main() {
     }
 
     console.log(`caching ${getCurrentDay()} days of history...`);
-    let cachedHistory = [];
+    let history = [];
     for (let i = 1; i <= getCurrentDay(); i++) {
-        cachedHistory.push(generateHistoryData(i));
+        history.push(generateHistoryData(i));
     }
 
     /**
@@ -283,8 +283,8 @@ async function main() {
      * @returns {Promise<Response>}
      */
     async function serveHistory() {
-        while (cachedHistory.length < getCurrentDay()) {
-            cachedHistory.push(generateHistoryData(history.length + 1));
+        while (history.length < getCurrentDay()) {
+            history.push(generateHistoryData(history.length + 1));
         }
 
         let rewriter = new HTMLRewriter()
@@ -298,7 +298,7 @@ async function main() {
                     e.setInnerContent(`
                         ${utils}
 
-                        let history = ${JSON.stringify(cachedHistory.slice(0, getCurrentDay()))};
+                        let history = ${JSON.stringify(history.slice(0, getCurrentDay()))};
                         let timezone = "${timezone}";
 
                         ${historySource}
