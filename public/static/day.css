@@ -207,7 +207,7 @@ footer {
             filter: grayscale(1) brightness(1000%);
         }
 
-        > #github-link { background-image: url("gh-icon.png"); }
+        > #github-link { background-image: url("github-icon.png"); }
         > #twitter-link { background-image: url("twitter-icon.png"); }
     }
 
