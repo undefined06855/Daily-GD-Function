@@ -192,14 +192,25 @@ footer {
         text-align: center;
     }
 
-    > #github-link {
-        width: 30px;
-        aspect-ratio: 1 / 1;
+    > #links {
+        display: flex;
+        flex-direction: row;
+        gap: 20px;
 
-        background-image: url("gh-icon.png");
-        background-size: cover;
-        filter: invert(1);
+        > a {
+            width: 30px;
+            aspect-ratio: 1 / 1;
+
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: grayscale(1) brightness(1000%);
+        }
+
+        > #github-link { background-image: url("gh-icon.png"); }
+        > #twitter-link { background-image: url("twitter-icon.png"); }
     }
+
 }
 
 @media (max-width: 750px) {
